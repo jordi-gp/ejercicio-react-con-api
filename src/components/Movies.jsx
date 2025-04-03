@@ -10,10 +10,10 @@ function ListOfMovies({ movies }) {
                 {/*eslint-disable-next-line react/prop-types*/}
                 {movies.map((movie) => {
                     return (
-                        <article className="filmCard" key={movie.imdbID}>
-                            <img src={movie.Poster} className="filmPoster" />
-                            <h3>{movie.Title}</h3>
-                            <span>{movie.Year}</span>
+                        <article className="filmCard" key={movie.id}>
+                            <img src={movie.poster} className="filmPoster" />
+                            <h3>{movie.title}</h3>
+                            <span>{movie.year}</span>
                         </article>
                     );
                 })}

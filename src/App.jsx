@@ -1,67 +1,70 @@
-import { React } from "react";
-import { useState, useEffect } from "react";
+import { React, useRef, useState } from "react";
 import { Movies } from "./components/Movies";
-import filmResults from "./mocks/results.json";
+import { useMovies } from "./hooks/useMovies";
+import { useSearch } from "./hooks/useSearch";
 import "./style.css";
 
 
 export function App() {
-    const API_KEY = "4287ad07";
-    const [search, setSearch] = useState("");
-    const [films, setFilms] = useState([]);
-    const API_URL = `https://www.omdbapi.com/?apikey=${API_KEY}&s=${search}`;
+    //const API_KEY = "4287ad07";
+    //const [search, setSearch] = useState("");
+    //const [films, setFilms] = useState([]);
+    //const API_URL = `https://www.omdbapi.com/?apikey=${API_KEY}&s=${search}`;
 
-    const movies = filmResults.Search;
+    const [formError, setFormError] = useState(null);
 
-    /**
-     * TODO:
-     * - Obtener listado de peliculas por búsqueda
-     * - Crear componente de tarjeta de película
-     */
+    const movies = useMovies();
+    //const inputRef = useRef();
+    const {search, setSearch, error} = useSearch();
 
-    useEffect(() => {
-        fetch(API_URL)
-            .then((response) => response.json())
-            .then((data) => {
-                if (!data.Search) {
-                    console.error("No se encontraron resultados");
-                    return;
-                }
-
-                data.Search.forEach((film) => {
-                    setFilms(film);
-                });
-            });
-    }, [search]);
-
-    /**
-     * El estado no se actualiza directamente, por eso al hacer el
-     * console.log dentro de esta función no se muestra el último valor
-     * del estado 'search', para ello se utiliza el useEffect
-     */
-    const searchFilm = (event) => {
+    const handleSubmit = (event) => {
         event.preventDefault();
-        const value = document.getElementById("filmTitle").value;
-        setSearch(value);
-    };
+
+        /**
+         * De esta forma se obtienen todos los campos del formulario
+         * en forma de objeto en una sola línea
+         */
+        const fields = Object.fromEntries(new window.FormData(event.target));
+
+        console.log(fields.query);
+        handleValidation(fields.query);
+    }
+
+    function handleValidation(query) {
+        if(query === '') {
+            setFormError('No se puede dejar el campo vacío');
+            return;
+        }
+
+        if(query.length < 3) {
+            setFormError('La búsqueda ha de contener almenos 3 caracteres');
+            return;
+        }
+
+        setFormError(null);
+    }
+
+    const handleChange = (event) => {
+        setSearch(event.target.value);
+    }
 
     return (
         <div className="page">
             <header>
                 <h2>Buscador de películas</h2>
-                <form>
+                <form className="form" onSubmit={handleSubmit}>
                     <input
-                        id="filmTitle"
+                        onChange={handleChange}
+                        value={search}
+                        name="query"
                         type="text"
                         placeholder="Star Wars, Avengers, Mamma mía..."
                     />
-                    <button onClick={searchFilm} type="submit">
-                        Buscar
-                    </button>
+                    <button type="submit">Buscar</button>
                 </form>
+                {formError && <p style={{ color: "red" }}>{error}</p>}
             </header>
             <main>
-                <span>Resultados de las películas</span>
                 <div className="filmList">
                     <Movies movies={movies} />
                 </div>
